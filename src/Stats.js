@@ -4,40 +4,45 @@ import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import StatsRow from "./StatsRow.js";
 import { key } from "./api";
 import axios from "axios";
-import { db } from "./firebase";
+import { db } from "./firebase"; // Firebase config import
+import { collection, onSnapshot } from "firebase/firestore"; // Import Firestore functions
 
 const BASE_URL = "https://finnhub.io/api/v1/quote?symbol=";
 const KEY_URL = `&token=${key}`;
 
-
-const testData = []; 
+const testData = [];
 
 function Stats() {
   const [stocksData, setStocksData] = useState([]);
   const [myStocks, setMyStocks] = useState([]);
 
+  // Fetch Firestore collection and set 'myStocks'
   const getMyStocks = () => {
-    db
-    .collection('myStocks')
-    .onSnapshot(snapshot => {
-        let promises = [];
-        let tempData = []
-        snapshot.docs.map((doc) => {
-          promises.push(getStocksData(doc.data().ticker)
-          .then(res => {
-            tempData.push({
-              id: doc.id,
-              data: doc.data(),
-              info: res.data
+    const stocksCollection = collection(db, "myStocks"); // Use Firestore 'collection' to reference 'myStocks'
+    onSnapshot(stocksCollection, (snapshot) => {
+      let promises = [];
+      let tempData = [];
+      
+      snapshot.docs.forEach((doc) => {
+        promises.push(
+          getStocksData(doc.data().ticker)
+            .then((res) => {
+              tempData.push({
+                id: doc.id,
+                data: doc.data(),
+                info: res.data,
+              });
             })
-          })
-        )})
-        Promise.all(promises).then(()=>{
-          setMyStocks(tempData);
-        })
-    })
-  }
+        );
+      });
 
+      Promise.all(promises).then(() => {
+        setMyStocks(tempData);
+      });
+    });
+  };
+
+  // Fetch stock data from the API
   const getStocksData = (stock) => {
     return axios
       .get(`${BASE_URL}${stock}${KEY_URL}`)
@@ -48,32 +53,33 @@ function Stats() {
 
   useEffect(() => {
     const stocksList = ["AAPL", "MSFT", "TSLA", "FB", "BABA", "UBER", "DIS", "SBUX"];
-
+    
+    // Fetch my stocks from Firestore
     getMyStocks();
+
+    // Fetch data for default stock list
     let promises = [];
     stocksList.map((stock) => {
       promises.push(
-        getStocksData(stock)
-        .then((res) => {
+        getStocksData(stock).then((res) => {
           testData.push({
             name: stock,
-            ...res.data
+            ...res.data,
           });
         })
-      )
+      );
     });
 
-    Promise.all(promises).then(()=>{
-      console.log(testData);
+    Promise.all(promises).then(() => {
       setStocksData(testData);
-    })
+    });
   }, []);
 
   return (
     <div className="stats">
       <div className="stats__container">
         <div className="stats__header">
-          <p> Stocks</p>
+          <p>Stocks</p>
           <MoreHorizIcon />
         </div>
         <div className="stats__content">

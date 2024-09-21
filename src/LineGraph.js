@@ -1,5 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
+import {
+  Chart, 
+  CategoryScale, 
+  LinearScale, 
+  PointElement, 
+  LineElement, 
+  Title, 
+  Tooltip, 
+  Legend 
+} from 'chart.js';
+
+// Register the scales you need
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const options = {
   legend: {

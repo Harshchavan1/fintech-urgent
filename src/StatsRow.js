@@ -5,38 +5,39 @@ import StatsRow from "./StatsRow";
 import { key } from "./api";
 import axios from "axios";
 import { db } from "./firebase";
+import { collection, onSnapshot } from "firebase/firestore"; // Import Firestore functions
 
 const BASE_URL = "https://finnhub.io/api/v1/quote?symbol=";
 const KEY_URL = `&token=${key}`;
 
-
-const testData = []; 
-
-function Stats() {
+const Stats = () => {
   const [stocksData, setStocksData] = useState([]);
   const [myStocks, setMyStocks] = useState([]);
 
   const getMyStocks = () => {
-    db
-    .collection('myStocks')
-    .onSnapshot(snapshot => {
-        let promises = [];
-        let tempData = []
-        snapshot.docs.map((doc) => {
-          promises.push(getStocksData(doc.data().ticker)
-          .then(res => {
+    const stocksCollection = collection(db, "myStocks"); // Use modular Firestore import
+
+    onSnapshot(stocksCollection, (snapshot) => {
+      let promises = [];
+      let tempData = [];
+      
+      snapshot.docs.forEach((doc) => {
+        promises.push(
+          getStocksData(doc.data().ticker).then((res) => {
             tempData.push({
               id: doc.id,
               data: doc.data(),
-              info: res.data
-            })
+              info: res.data,
+            });
           })
-        )})
-        Promise.all(promises).then(()=>{
-          setMyStocks(tempData);
-        })
-    })
-  }
+        );
+      });
+
+      Promise.all(promises).then(() => {
+        setMyStocks(tempData);
+      });
+    });
+  };
 
   const getStocksData = (stock) => {
     return axios
@@ -48,32 +49,31 @@ function Stats() {
 
   useEffect(() => {
     const stocksList = ["AAPL", "MSFT", "TSLA", "FB", "BABA", "UBER", "DIS", "SBUX"];
-
+    
     getMyStocks();
+
     let promises = [];
-    stocksList.map((stock) => {
+    stocksList.forEach((stock) => {
       promises.push(
-        getStocksData(stock)
-        .then((res) => {
-          testData.push({
+        getStocksData(stock).then((res) => {
+          return {
             name: stock,
-            ...res.data
-          });
+            ...res.data,
+          };
         })
-      )
+      );
     });
 
-    Promise.all(promises).then(()=>{
-      console.log(testData);
-      setStocksData(testData);
-    })
+    Promise.all(promises).then((results) => {
+      setStocksData(results);
+    });
   }, []);
 
   return (
     <div className="stats">
       <div className="stats__container">
         <div className="stats__header">
-          <p> Stocks</p>
+          <p>Stocks</p>
           <MoreHorizIcon />
         </div>
         <div className="stats__content">
