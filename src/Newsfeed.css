@@ -11,8 +11,6 @@
   font-size: 12px;
 }
 
-.newsfeed__chart__section {
-}
 .newsfeed__buying__section {
   padding: 20px 0px 20px 0px;
   display: flex;
@@ -138,9 +136,6 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-}
-
-.newsfeed__topmovers__card__name {
 }
 
 .newsfeed__topmovers__card__numbers {
