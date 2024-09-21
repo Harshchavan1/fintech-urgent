@@ -1,13 +1,25 @@
 import React, { useState, useEffect } from "react";
 import "./Newsfeed.css";
 import LineGraph from "./LineGraph";
-
+function Newsfeed() {
+  const [popularTopics, setTopics] = useState([
+    "Technology",
+    "Top Movies",
+    "Upcoming Earnings",
+    "Crypto",
+    "Cannabis",
+    "Healthcare Supplies",
+    "Index ETFs",
+    "Technology",
+    "China",
+    "Pharma",
+  ]);
   const [seed, setSeed] = useState("");
 
   useEffect(() => {
     setSeed(Math.floor(Math.random() * 5000));
   }, []);
-
+  
   return (
     <div className="newsfeed">
       <div className="newsfeed__container">
@@ -23,5 +35,5 @@ import LineGraph from "./LineGraph";
       </div>
     </div>
   );
-
+}
 export default Newsfeed;
